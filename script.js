@@ -1,2 +1,94 @@
-const questions=[{tag:'HTML',text:'Which HTML element is used for the largest heading?',answers:['<heading>','<h1>','<head>','<title>'],correct:1,why:'<h1> represents the most important heading on a page.'},{tag:'CSS',text:'Which CSS property changes the text color of an element?',answers:['font-style','background-color','color','text-decoration'],correct:2,why:'The color property controls the foreground text color.'},{tag:'JAVASCRIPT',text:'Which keyword creates a variable that cannot be reassigned?',answers:['var','let','const','fixed'],correct:2,why:'const creates a binding that cannot be reassigned.'},{tag:'WEB',text:'What does responsive design help a website do?',answers:['Load only on phones','Adapt to different screen sizes','Remove all images','Make code run faster'],correct:1,why:'Responsive layouts adapt their content and controls to the available space.'},{tag:'ACCESSIBILITY',text:'Which attribute provides a text alternative for an image?',answers:['role','alt','title','label'],correct:1,why:'alt text gives screen readers a useful description of an image.'}];
-let current=0,score=0,streak=0,answered=false;const question=document.querySelector('#question'),tag=document.querySelector('#question-tag'),answers=document.querySelector('#answers'),feedback=document.querySelector('#feedback'),next=document.querySelector('#next-button'),number=document.querySelector('#question-number'),bar=document.querySelector('#progress-bar');function loadQuestion(){const item=questions[current];answered=false;tag.textContent=item.tag;number.textContent=String(current+1).padStart(2,'0');bar.style.width=`${((current+1)/questions.length)*100}%`;question.textContent=item.text;feedback.textContent='';feedback.className='feedback';next.hidden=true;answers.innerHTML='';item.answers.forEach((text,index)=>{const button=document.createElement('button');button.className='answer';button.dataset.letter=String.fromCharCode(65+index);button.textContent=text;button.addEventListener('click',()=>choose(button,index));answers.append(button)})}function choose(button,index){if(answered)return;answered=true;const item=questions[current];document.querySelectorAll('.answer').forEach((answer,answerIndex)=>{answer.disabled=true;if(answerIndex===item.correct)answer.classList.add('correct')});if(index===item.correct){score++;streak++;feedback.textContent=`Correct. ${item.why}`;feedback.className='feedback good'}else{streak=0;button.classList.add('wrong');feedback.textContent=`Not quite. ${item.why}`;feedback.className='feedback bad'}document.querySelector('#streak').textContent=String(streak).padStart(2,'0');next.hidden=false;next.textContent=current===questions.length-1?'See your result ↗':'Next question ↗'}function finish(){document.querySelector('#quiz-view').classList.add('hidden');document.querySelector('#result-view').classList.remove('hidden');document.querySelector('#result-score').textContent=score;document.querySelector('#result-message').textContent=score===5?'Perfect score. Your curiosity is fully charged.':score>=3?'Strong run. Keep exploring and you will go far.':'Good first pass. Every wrong answer is a new thing learned.'}next.addEventListener('click',()=>{if(current===questions.length-1)finish();else{current++;loadQuestion()}});document.querySelector('#restart-button').addEventListener('click',()=>{current=0;score=0;streak=0;document.querySelector('#streak').textContent='00';document.querySelector('#quiz-view').classList.remove('hidden');document.querySelector('#result-view').classList.add('hidden');loadQuestion()});document.addEventListener('keydown',(event)=>{if(event.key==='Escape'){current=0;score=0;streak=0;document.querySelector('#streak').textContent='00';document.querySelector('#quiz-view').classList.remove('hidden');document.querySelector('#result-view').classList.add('hidden');loadQuestion()}});loadQuestion();
+const cursorDot = document.querySelector('.cursor-dot');
+const cursorRing = document.querySelector('.cursor-ring');
+const menuButton = document.querySelector('.menu-button');
+const navigation = document.querySelector('nav');
+const profilePhoto = document.querySelector('.profile-photo');
+const clockLogo = document.querySelector('.clock .project-logo span');
+const clockLogoFrame = document.querySelector('.clock .project-logo');
+
+function updateProjectClock() {
+  const now = new Date();
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+  clockLogo.style.setProperty('--clock-hour', `${hours * 30}deg`);
+  clockLogo.style.setProperty('--clock-minute', `${minutes * 6}deg`);
+  clockLogoFrame.style.setProperty('--clock-second', `${seconds * 6}deg`);
+}
+
+updateProjectClock();
+setInterval(updateProjectClock, 1000);
+const introScreen = document.querySelector('#intro-screen');
+const glitterField = document.querySelector('.glitter-field');
+
+for (let index = 0; index < 38; index += 1) {
+  const glitter = document.createElement('i');
+  glitter.className = 'glitter';
+  glitter.style.left = `${Math.random() * 100}%`;
+  glitter.style.top = `${Math.random() * 100}%`;
+  glitter.style.setProperty('--glitter-duration', `${1.4 + Math.random() * 2.2}s`);
+  glitter.style.setProperty('--glitter-delay', `${Math.random() * 1.8}s`);
+  glitterField.append(glitter);
+}
+
+setTimeout(() => introScreen.classList.add('done'), 2600);
+
+profilePhoto.addEventListener('error', () => {
+  profilePhoto.hidden = true;
+});
+
+clockLogo?.addEventListener('click', (event) => {
+  event.preventDefault();
+  clockLogo.classList.add('logo-pulse');
+  setTimeout(() => clockLogo.classList.remove('logo-pulse'), 500);
+});
+
+window.addEventListener('pointermove', (event) => {
+  cursorDot.style.left = `${event.clientX}px`;
+  cursorDot.style.top = `${event.clientY}px`;
+  cursorRing.style.left = `${event.clientX}px`;
+  cursorRing.style.top = `${event.clientY}px`;
+});
+
+document.querySelectorAll('a, button, select').forEach((interactive) => {
+  interactive.addEventListener('mouseenter', () => cursorRing.classList.add('hovering'));
+  interactive.addEventListener('mouseleave', () => cursorRing.classList.remove('hovering'));
+});
+
+menuButton.addEventListener('click', () => {
+  const open = navigation.classList.toggle('open');
+  menuButton.setAttribute('aria-expanded', String(open));
+});
+
+document.querySelectorAll('nav a').forEach((link) => {
+  link.addEventListener('click', (event) => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (!target) return;
+    event.preventDefault();
+    navigation.classList.remove('open');
+    menuButton.setAttribute('aria-expanded', 'false');
+    target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+const cycleWords = ['projects', 'experiments', 'experiences'];
+let wordIndex = 0;
+const wordElement = document.querySelector('.word-cycle');
+setInterval(() => {
+  wordElement.classList.add('changing');
+  setTimeout(() => {
+    wordIndex = (wordIndex + 1) % cycleWords.length;
+    wordElement.textContent = cycleWords[wordIndex];
+    wordElement.classList.remove('changing');
+  }, 220);
+}, 2400);
+
+const revealObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.about, .work, .skills, .education, .contact').forEach((section) => revealObserver.observe(section));
